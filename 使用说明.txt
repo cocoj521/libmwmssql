@@ -1,0 +1,74 @@
+编译方法:
+./build.sh 		:编译debug版本
+./build-release.sh 	:编译release版本
+
+
+使用方法:
+1. 需要先安装unixODBC和freetds
+2. 需要包含以下头文件
+MsSqlHelper.h
+SQLBase.h
+SQLConnection.h
+SQLException.h
+SQLField.h
+SQLResult.h
+SQLTypes.h
+SQLValue.h
+3. 链接libmwmssql.a库
+
+
+!!!运行需要unixODBC和freetds支持,
+附<unixODBC&freetds安装配置>:
+!!!必须要先安装unixODBC库，再安装freetds库
+安装unixODBC:
+1.下载unixODBC-2.3.4.tar
+2.tar xvf unixODBC-2.3.4.tar
+3.cd unixODBC-2.3.4
+4../configure
+5.make & make install
+
+安装freetds:
+1.下载freetds-patched.tar.gz
+2.tar zxvf freetds-patched.tar.gz
+3.cd freetds-1.00.27
+4../configure --prefix=/usr/local/freetds --with-tdsver=auto --enable-msdblib --with-gnu-ld --enable-shared --enable-static
+5.make & make install
+
+配置ODBC数据源:
+1.配置MSSQL的ODBC驱动信息
+vi /usr/local/etc/odbcinst.ini
+添加:
+[MSSQL]
+Description      = ODBC of FreeTDS for MSSQL
+Driver          = /usr/local/freetds/lib/libtdsodbc.so
+Driver64        = /usr/local/freetds/lib/libtdsodbc.so
+#Setup         = /usr/local/lib/libtds.so
+#FileUsage      = 1
+UsageCount     = 1
+
+2.在freetds中添加MSSQL的服务器信息(Servername)
+vi /usr/local/freetds/etc/freetds.conf
+在[global]节点下添加如下：
+#客服端的字符编码（必须设置成GBK）
+client charset = GBK
+在末尾添加数据库服务器信息(如有多个,顺序追加即可):
+[dbhost_1_31]
+host = 192.165.1.131
+port = 1433
+tds version = 8.0
+client charset = GBK
+可以不指定tds version和client charset,它会使用[global]节点下设置的值
+
+3.配置ODBC数据源(DSName)
+vi /usr/local/etc/odbc.ini
+#数据源名称
+[ds_testdb]
+#数据源描述
+Description = database connection to testdb
+#驱动名称,必须在odbcinst.ini能找到相应的配置
+Driver = MSSQL
+#数据库服务器服务名,必须要先在/usr/local/freetds/etc/freetds.conf中配置好
+Servername = dbhost_1_31
+#数据库实例名
+Database = testdb
+
